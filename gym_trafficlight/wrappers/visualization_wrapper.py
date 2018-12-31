@@ -5,5 +5,5 @@ class TrafficVisualizationWrapper(Wrapper):
             env.visual = True
             env.cmd[0] = 'sumo-gui'
         else:
-            print('warning: env doesn't have visual attribute, this wrapper only support *traffic env*')
+            print('warning: env doesn\'t have visual attribute, this wrapper only support *traffic env*')
         return

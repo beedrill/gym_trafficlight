@@ -49,6 +49,6 @@ an example of running a2c from baselines can be found in __gym_trafficlight/exam
 `python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7`
 
 ## visualize performance
-Visualization of performance can't be directly observed within the docker container, one need to run the script outside of the container, with [SUMO](http://sumo.dlr.de/wiki/Installing) properly installed and [SUMO_HOME environment parameter properly configured](http://sumo.dlr.de/wiki/Basics/Basic_Computer_Skills#SUMO_HOME), one example of visualizaing the performance is using the example run_env.py script:
+Visualization of performance can't be directly observed within the docker container, one need to run the script outside of the container, with [SUMO](http://sumo.dlr.de/wiki/Installing) properly installed and [SUMO_HOME environment parameter properly configured](http://sumo.dlr.de/wiki/Basics/Basic_Computer_Skills#SUMO_HOME), one example of visualizaing the performance is, again, using the example __run_env.py__ script:
 
-'python3 run_env.py --alg=a2c --network=mlp --num_timesteps=0 --load=/your/model/path --play'
+`python3 run_env.py --alg=a2c --network=mlp --num_timesteps=0 --load=/your/model/path --play`

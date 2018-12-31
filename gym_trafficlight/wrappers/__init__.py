@@ -1,1 +1,1 @@
-from visualization_wrapper import TrafficVisualizationWrapper
+from gym_trafficlight.wrappers.visualization_wrapper import TrafficVisualizationWrapper

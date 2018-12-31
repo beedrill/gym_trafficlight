@@ -27,7 +27,11 @@ cd /home/gym_trafficlight
 pip install -e .
 ```
 ## testing installation
-to check installation, directly running this script: `python3 gym_trafficlight/examples/test_install.py` if successfully installed, it should print "installation success"
+to check installation, directly running this script:
+
+`python3 gym_trafficlight/examples/test_install.py`
+
+if successfully installed, it should print "installation success"
 
 # Example
 
@@ -41,5 +45,5 @@ gym.make('TrafficLight-v0')
 ```
 
 ## example of running baselines alg
-an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__, one can run it using:
-`python3 run_env.py --algo=a2c --network=mlp --num_timesteps=2e7`
+an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__:
+`python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7`

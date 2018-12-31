@@ -441,7 +441,8 @@ class TrafficEnv(gym.Env):
                  map_file = '1-intersection/traffic.net.xml',
                  config_file = None,
                  route_file = '1-intersection/traffic.rou.xml',
-                 end_time = 3600, episode_time = 1000,
+                 end_time = 3600,
+                 episode_time = 3000,
                  additional_file = None,
                  gui_setting_file = "1-intersection/view.settings.xml",
                  penetration_rate = 1,
@@ -646,8 +647,8 @@ class TrafficEnv(gym.Env):
         terminal = (self.time == self.episode_time)
         if self.no_hard_end:
             terminal = self._simulation_check_end()
-        #print(terminal)
-
+        #print(terminal, self.time)
+        #print('reward: {}'.format(reward))
         return observation, reward, terminal, info
 
     def start(self):

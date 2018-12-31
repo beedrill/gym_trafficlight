@@ -194,7 +194,7 @@ class TrafficLight():
 
 
 class SimpleTrafficLight(TrafficLight):
-    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 11, lane_list = [], state_representation = ''):
+    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = ''):
 
         TrafficLight.__init__(self, tlid, simulator)
         self.signal_groups = ['rrrrGGGGrrrrGGGG','rrrryyyyrrrryyyy','GGGGrrrrGGGGrrrr','yyyyrrrryyyyrrrr']
@@ -351,7 +351,7 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
         max_phase_time= 40.,
         min_phase_time = 5,
         yellow_time = 3,
-        num_traffic_state = 11,
+        num_traffic_state = 10,
         lane_list = [],
         state_representation = '',
         signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
@@ -429,7 +429,7 @@ class TrafficEnv(gym.Env):
                  additional_file = None,
                  gui_setting_file = "1-intersection/view.settings.xml",
                  penetration_rate = 1,
-                 num_traffic_state = 11,
+                 num_traffic_state = 10,
                  record_file = "record.txt",
                  whole_day = False,
                  state_representation = 'sign',

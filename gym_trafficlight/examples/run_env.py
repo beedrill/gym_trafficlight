@@ -3,6 +3,7 @@ import multiprocessing
 import os.path as osp
 import gym
 import gym_trafficlight
+from gym_trafficlight.wrappers import TrafficVisualizationWrapper
 from collections import defaultdict
 import tensorflow as tf
 import numpy as np
@@ -17,6 +18,7 @@ from baselines import logger
 from importlib import import_module
 
 from baselines.common.vec_env.vec_normalize import VecNormalize
+
 
 try:
     from mpi4py import MPI
@@ -161,6 +163,7 @@ def main(args):
         rank = MPI.COMM_WORLD.Get_rank()
     #env_type: cmu_ece
     #env_id: TrafficLight-v0
+    print('rank is {}'.format(rank))
 
     model, env = train(args, extra_args)
     env.close()
@@ -172,6 +175,7 @@ def main(args):
     if args.play:
         logger.log("Running trained model")
         env = build_env(args)
+        env = TrafficVisualizationWrapper(env)
         obs = env.reset()
 
         state = model.initial_state if hasattr(model, 'initial_state') else None

@@ -21,6 +21,7 @@ import random
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
+#import numpy as np
 
 TRUNCATE_DISTANCE = 125.
 
@@ -194,7 +195,7 @@ class TrafficLight():
 
 
 class SimpleTrafficLight(TrafficLight):
-    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = ''):
+    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = '', reward_type = 'penalty'):
 
         TrafficLight.__init__(self, tlid, simulator)
         self.signal_groups = ['rrrrGGGGrrrrGGGG','rrrryyyyrrrryyyy','GGGGrrrrGGGGrrrr','yyyyrrrryyyyrrrr']
@@ -223,6 +224,7 @@ class SimpleTrafficLight(TrafficLight):
         #    self.traffic_state = np.zeros((self.lanes, self.lane_length))
 
         self.reward = None
+        self.reward_type = reward_type
 
     def updateRLParameters(self):
         if self.state_representation == 'original':
@@ -233,6 +235,14 @@ class SimpleTrafficLight(TrafficLight):
         else:
             print('no such state representation supported')
             return
+        self.wrap_reward()
+
+    def wrap_reward(self):
+        if self.reward_type == 'reward':
+            self.reward = -self.reward
+        elif not self.reward_type == 'penalty':
+            print('reward type wrong')
+
 
     def updateRLParameters_sign(self):
         lane_list = self.lane_list  # temporary, in the future, get this from the .net.xml file
@@ -357,7 +367,7 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
         signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
         #signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
         SimpleTrafficLight.__init__(self,tlid, simulator, max_phase_time= max_phase_time, min_phase_time = min_phase_time,
-            yellow_time = yellow_time, num_traffic_state = num_traffic_state, lane_list = lane_list, state_representation = state_representation)
+            yellow_time = yellow_time, num_traffic_state = num_traffic_state, lane_list = lane_list, state_representation = state_representation,reward_type = reward_type)
         self.signal_groups = signal_groups
         self.yellow_phases = []
         self.normal_phases = []
@@ -439,14 +449,26 @@ class TrafficEnv(gym.Env):
                  unstationary_flow = False,
                  standard_file_name = '',
                  force_sumo = False,
-                 return_as_reward = False):
+                 reward_type = 'penalty'):
         self.visual = visual
-        map_folder = 'map/'
-        self.map_file = map_folder+map_file
-        self.config_file = map_folder+config_file
+        map_folder = os.path.dirname(os.path.abspath(__file__))
+        self.map_file = None
+        if map_file:
+            self.map_file = os.path.join(map_folder, 'map', map_file)
+        self.config_file = None
+        if config_file:
+            self.config_file = os.path.join(map_folder,'map', config_file)
+
+        self.route_file = None
+        if route_file:
+            self.route_file = os.path.join(map_folder, 'map', route_file)
+
+        self.additional_file = None
+        if additional_file:
+            self.additional_file = os.path.join(map_folder, 'map',  additional_file)
         self.end_time = end_time
-        self.route_file = map_folder+route_file
-        self.additional_file = map_folder+additional_file
+
+
         self.gui_setting_file = map_folder+gui_setting_file
         self.veh_list = {}
         self.tl_list = {}
@@ -455,9 +477,9 @@ class TrafficEnv(gym.Env):
         self.reset_to_same_time = False
         self.state_representation = state_representation
         self.traffic_light_module = traffic_light_module
-
+        self.reward_type = reward_type
         self.penetration_rate = penetration_rate
-        self.return_as_reward = return_as_reward
+        #self.return_as_reward = return_as_reward
         #lane_list = ['0_e_0', '0_n_0','0_s_0','0_w_0','e_0_0','n_0_0','s_0_0','w_0_0'] # temporary, in the future, get this from the .net.xml file
         #self.lane_list = {l:Lane(l,self,penetration_rate=penetration_rate) for l in lane_list}
         #tl_list = ['0'] # temporary, in the future, get this from .net.xml file
@@ -538,7 +560,7 @@ class TrafficEnv(gym.Env):
         lane_list = []
         for tlid in self.tl_id_list:
             tl_lane_list = remove_duplicates(traci.trafficlights.getControlledLanes(tlid))
-            self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation)
+            self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation, reward_type = self.reward_type)
             lane_list = lane_list + tl_lane_list
             #print 'controlled lane', self.tl_list[tlid].lane_list
         #lane_list = traci.lane.getIDList()
@@ -781,7 +803,7 @@ class Lane():
 
 class ActionSpaces(spaces.MultiDiscrete):
     def __init__(self, num_TL, num_actions):
-        spaces.MultiDiscrete(self, [num_actions for i in range(0, num_TL)])
+        spaces.MultiDiscrete.__init__(self, [num_actions for i in range(0, num_TL)])
         self.num_TL = num_TL
         self.n = num_actions
 
@@ -790,7 +812,7 @@ class ActionSpaces(spaces.MultiDiscrete):
 
 class ObservationSpaces(spaces.Box):
     def __init__(self, num_TL, num_attrs):
-        spaces.Box(self,low = 0, high = 10, shape = (num_TL, num_attrs))
+        spaces.Box.__init__(self,low = 0, high = 10, shape = (num_TL, num_attrs), dtype = np.float32)
 if __name__ == '__main__':
     #
     # num_episode = 100

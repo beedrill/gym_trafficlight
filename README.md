@@ -6,9 +6,21 @@ The environment currently does not implement render() functionality, one can vis
 
 # Installation
 If only need to run traffic env, to avoid redundant installation, __use this [folked version of baselines](https://github.com/beedrill/baselines)__
-run the following command to run and configure in a docker:
+after cloning this repo and baselines repo, run the following command to run and configure in a docker
+
+- For GPU enabled machine:
 ```
 nvidia-docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines beedrill/rltl-docker:gpu-py3 /bin/bash
+cd /home/baselines
+pip install -e .
+cd /home/gym_trafficlight
+pip install -e .
+```
+
+- For CPU, run:
+
+```
+docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines beedrill/rltl-docker:cpu-py3 /bin/bash
 cd /home/baselines
 pip install -e .
 cd /home/gym_trafficlight

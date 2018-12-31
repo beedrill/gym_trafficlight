@@ -10,3 +10,4 @@ register(
     reward_threshold=1.0,
     nondeterministic = True,
 )
+#print('registered to gym env')

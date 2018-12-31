@@ -415,7 +415,13 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
             #print(self.simulator.current_day_time)
 
         #print(self.traffic_state)
-
+def build_path(rel_path):
+    ## build abs path from relative path, return None if input is None
+    abs_path = None
+    map_folder = os.path.dirname(os.path.abspath(__file__))
+    if rel_path:
+        abs_path = os.path.join(map_folder,'map', rel_path)
+    return abs_path
 class TrafficEnv(gym.Env):
     """
         openAI gym environment
@@ -449,27 +455,16 @@ class TrafficEnv(gym.Env):
                  unstationary_flow = False,
                  standard_file_name = '',
                  force_sumo = False,
-                 reward_type = 'penalty'):
+                 reward_type = 'reward'):
         self.visual = visual
-        map_folder = os.path.dirname(os.path.abspath(__file__))
-        self.map_file = None
-        if map_file:
-            self.map_file = os.path.join(map_folder, 'map', map_file)
-        self.config_file = None
-        if config_file:
-            self.config_file = os.path.join(map_folder,'map', config_file)
+        self.map_file = build_path(map_file)
 
-        self.route_file = None
-        if route_file:
-            self.route_file = os.path.join(map_folder, 'map', route_file)
-
-        self.additional_file = None
-        if additional_file:
-            self.additional_file = os.path.join(map_folder, 'map',  additional_file)
+        self.config_file = build_path(config_file)
+        self.route_file = build_path(route_file)
+        self.additional_file = build_path(additional_file)
+        self.gui_setting_file = build_path(gui_setting_file)
         self.end_time = end_time
 
-
-        self.gui_setting_file = map_folder+gui_setting_file
         self.veh_list = {}
         self.tl_list = {}
         self.is_started = False
@@ -807,8 +802,8 @@ class ActionSpaces(spaces.MultiDiscrete):
         self.num_TL = num_TL
         self.n = num_actions
 
-    def sample(self):
-        return np.random.randint(self.n, size=self.num_TL)
+    #def sample(self):
+    #    return np.random.randint(self.n, size=self.num_TL)
 
 class ObservationSpaces(spaces.Box):
     def __init__(self, num_TL, num_attrs):

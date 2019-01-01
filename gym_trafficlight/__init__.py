@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 register(
     id='TrafficLight-v0',
-    entry_point='gym_trafficlight.envs:TrafficEnv',
+    entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
     timestep_limit=1000,
     reward_threshold=1.0,
     nondeterministic = True,

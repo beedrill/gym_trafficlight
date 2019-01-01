@@ -4,6 +4,7 @@ except ImportError:
     print('libsumo not installed properly, please use traci only')
 # comment this line if you dont have pysumo and set visual = True, it should still run traci
 import os, sys
+import inspect
 import xml.etree.ElementTree as ET
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -535,6 +536,8 @@ class TrafficEnv(gym.Env):
         if not gui_setting_file == None:
             self.cmd+=['--gui-settings-file', self.gui_setting_file]
         self.record_file = record_file
+    def reinitialize_parameters(self, **kwargs):
+        self.__init__(**kwargs)
 
     def step_(self):
         #use step() for standard operation, this is only for normal traffic light
@@ -547,6 +550,7 @@ class TrafficEnv(gym.Env):
                   '--net-file', self.map_file,
                   '--route-files', self.route_file,
                   '--end', str(self.end_time)]
+        print('init using cmd: {}'.format(cmd))
         traci.start(cmd)
         #time.sleep(1)
         if tl_list:
@@ -582,6 +586,14 @@ class TrafficEnv(gym.Env):
             traci.start(self.cmd)
             return
 
+    @staticmethod
+    def get_default_init_parameters():
+        signature = inspect.signature(TrafficEnv.__init__)
+        return {
+            k: v.default
+            for k, v in signature.parameters.items()
+            if v.default is not inspect.Parameter.empty
+            }
 
     def _simulation_end(self):
         if self.visual == False:

@@ -5,10 +5,16 @@ partial detection (new wireless communication based traffic lights)
 The environment currently does not implement **render()**, but the same functionality is achieved by using sumo-gui (setting `visual=True`))
 
 # Installation
-If only need to run traffic env, to run baselines algorithm for the environment, __use this [folked version of baselines](https://github.com/beedrill/baselines)__
-, this version of baselines is slightly modified to adapt TrafficEnv. After cloning this repo and baselines repo, run the following command to run and configure in a docker
+## Install env
+`pip install -e .`
+
+## Run Openai Baselines
+
+To run baselines algorithm for the environment, __use this [folked version of baselines](https://github.com/beedrill/baselines)__,
+, this version of baselines is slightly modified to adapt TrafficEnv. After cloning this repo and baselines repo, run the following command to run and configure in a docker.
 
 - For GPU enabled machines:
+
 ```
 nvidia-docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines -v ~/saved_models:/home/saved_models beedrill/rltl-docker:gpu-py3 /bin/bash
 cd /home/baselines
@@ -43,6 +49,12 @@ import gym
 import gym_trafficlight
 gym.make('TrafficLight-v0')
 ```
+## Change Env Parameters
+One can change parameters by directly passing it:
+
+`python3 run_env.py --alg=a2c --penetration_rate=0.5`
+
+The arg `--parameter_rate=0.5` will be directly passed to the env constructor.
 
 ## Training
 an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__:

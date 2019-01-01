@@ -54,7 +54,7 @@ One can change parameters by directly passing it:
 
 `python3 run_env.py --alg=a2c --penetration_rate=0.5`
 
-The arg `--parameter_rate=0.5` will be directly passed to the env constructor.
+The arg `--parameter_rate=0.5` will be directly passed to the env constructor. The parameter updating is done through a wrapper.
 
 ## Training
 an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__:

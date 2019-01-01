@@ -457,6 +457,8 @@ class TrafficEnv(gym.Env):
                  standard_file_name = '',
                  force_sumo = False,
                  reward_type = 'reward'):
+        super().__init__()
+        self.reward_range = (-float('inf'), float('inf'))
         self.visual = visual
         self.map_file = build_path(map_file)
 
@@ -666,6 +668,10 @@ class TrafficEnv(gym.Env):
 
     def reset(self):
         return self._reset()
+
+    def render(self, mode=None):
+        ##render is not implemented, to visualize performance, set visual attribute to True and cmd[0] to 'sumo-gui'
+        return
 
     def _reset(self):
         if self.is_started == True:

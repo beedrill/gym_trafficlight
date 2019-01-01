@@ -175,7 +175,8 @@ def main(args):
     if args.play:
         logger.log("Running trained model")
         env = build_env(args)
-        env = TrafficVisualizationWrapper(env)
+        for e in env.envs:
+            e = TrafficVisualizationWrapper(e)
         obs = env.reset()
 
         state = model.initial_state if hasattr(model, 'initial_state') else None

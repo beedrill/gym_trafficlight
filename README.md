@@ -44,11 +44,31 @@ import gym_trafficlight
 gym.make('TrafficLight-v0')
 ```
 
-## example of running baselines alg
+## Training
 an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__:
 `python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7`
-
+## Save Trained Model
+Here is an example of saving the model:
+`python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7 --save_path=/path/to/your/saved_models`
+it will save the final model after training
 ## visualize performance
-Visualization of performance can't be directly observed within the docker container, one need to run the script outside of the container, with [SUMO](http://sumo.dlr.de/wiki/Installing) properly installed and [SUMO_HOME environment parameter properly configured](http://sumo.dlr.de/wiki/Basics/Basic_Computer_Skills#SUMO_HOME), one example of visualizaing the performance is, again, using the example __run_env.py__ script:
+### installing SUMO
+The traffic environment is based on an open source simulator [SUMO](http://sumo.dlr.de/wiki/Simulation_of_Urban_MObility_-_Wiki).
+Visualization of performance can't be directly observed within the docker container, one need to run the script outside of the container, that means the need of [installing SUMO](http://sumo.dlr.de/wiki/Installing) and [have SUMO_HOME environment parameter properly configured](http://sumo.dlr.de/wiki/Basics/Basic_Computer_Skills#SUMO_HOME)
 
-`python3 run_env.py --alg=a2c --network=mlp --num_timesteps=0 --load=/your/model/path --play`
+### installing dependency
+As visualization is running [traci](http://sumo.dlr.de/wiki/TraCI) as interface, it is not required to install libsumo (which is installed in the docker image). But there is still the need of installing some other dependencies. Here gives an example of configuring a conda virtual environment using [Anaconda](https://www.anaconda.com/) (for visualization purpose, only a cpu version of tensorflow is sufficient). **when creating the virtual environment, make sure the default python of the virtual environment is python 3.6**
+
+```
+conda create -n rltl_baselines tensorflow
+conda activate rltl_baselines
+cd ~/baselines
+pip install -e .
+cd ~/gym_trafficlight
+pip install -e .
+```
+
+### example of visualization
+one example of visualizaing the performance is, again, using the example __run_env.py__ script
+
+`python3 run_env.py --alg=a2c --network=mlp --num_timesteps=0 --load_path=/your/model/path --play`

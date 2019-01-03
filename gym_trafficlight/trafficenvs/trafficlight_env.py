@@ -196,7 +196,7 @@ class TrafficLight():
 
 
 class SimpleTrafficLight(TrafficLight):
-    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = '', reward_type = 'penalty'):
+    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = '', reward_present_form = 'penalty'):
 
         TrafficLight.__init__(self, tlid, simulator)
         self.signal_groups = ['rrrrGGGGrrrrGGGG','rrrryyyyrrrryyyy','GGGGrrrrGGGGrrrr','yyyyrrrryyyyrrrr']
@@ -225,7 +225,7 @@ class SimpleTrafficLight(TrafficLight):
         #    self.traffic_state = np.zeros((self.lanes, self.lane_length))
 
         self.reward = None
-        self.reward_type = reward_type
+        self.reward_present_form = reward_present_form
 
     def updateRLParameters(self):
         if self.state_representation == 'original':
@@ -239,9 +239,9 @@ class SimpleTrafficLight(TrafficLight):
         self.wrap_reward()
 
     def wrap_reward(self):
-        if self.reward_type == 'reward':
+        if self.reward_present_form == 'reward':
             self.reward = -self.reward
-        elif not self.reward_type == 'penalty':
+        elif not self.reward_present_form == 'penalty':
             print('reward type wrong')
 
 
@@ -368,7 +368,7 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
         signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
         #signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
         SimpleTrafficLight.__init__(self,tlid, simulator, max_phase_time= max_phase_time, min_phase_time = min_phase_time,
-            yellow_time = yellow_time, num_traffic_state = num_traffic_state, lane_list = lane_list, state_representation = state_representation,reward_type = reward_type)
+            yellow_time = yellow_time, num_traffic_state = num_traffic_state, lane_list = lane_list, state_representation = state_representation,reward_present_form = reward_present_form)
         self.signal_groups = signal_groups
         self.yellow_phases = []
         self.normal_phases = []
@@ -439,6 +439,7 @@ class TrafficEnv(gym.Env):
 
 
     def __init__(self, visual = False,
+                 logger_type = 'baselines_logger',
                  map_file = '1-intersection/traffic.net.xml',
                  config_file = None,
                  route_file = '1-intersection/traffic.rou.xml',
@@ -457,12 +458,74 @@ class TrafficEnv(gym.Env):
                  unstationary_flow = False,
                  standard_file_name = '',
                  force_sumo = False,
-                 reward_type = 'reward'):
+                 reward_present_form = 'reward',
+                 reward_type = 'local',
+                 log_waiting_time = False):
+        '''
+        Parameters:
+        -----------
+        visual:                         Is it for visualization, setting True will run sumo-gui as backend (much slower), setting False to run libsumo backend
+
+        logger_type:                    'baselines_logger' to use the logger openai baselines offer
+
+        map_file:                       sumo map file name, only support files in the trafficenvs/map map_folder
+
+        config_file:                    sumo config file name, specifying this will override map_file and route_file
+
+        route_file:                     sumo route file name
+
+        end_time:                       simulation end time
+
+        episode_time:                   episode length, must be smaller than end_time
+
+        additional_file:                sumo additional file name
+
+        gui_setting_file:               sumo gui setting file name
+
+        penetration_rate:               the percentage of vehicle being detected
+
+        num_traffic_state:              the traffic observation state's dimension
+
+        record_file:                    the file name of record, not used anymore, use standard baselines logger instead
+
+        whole_day:                      when setting true, every reset, it will call flow manager to reset flow and hour
+
+        state_representation:           can be 'sign' or 'original', as different ways of represent state
+
+        flow_manager_file_prefix:       flow_manager's prefix parameter, will feed to flow manager
+
+        traffic_light_module:           traffic light module
+
+        tl_list:                        the list of all the intelligent traffic lights, traffic lights not on the list will
+                                        not detect vehicles and change phases in the run time (they only change phase as preprogrammed)
+
+        unstationary_flow:              by setting this to True, traffic agent will add an extra attribute to the state to set current time
+
+        standard_file_name:             standard flow file, used to feed some specific flow manager
+
+        force_sumo = False:             when set True, the env will use non-gui sumo as backend through Traci instead of libsumo, use it when
+                                        libsumo cannot run properly, this will slow down the running speed as Traci interface will be slower
+
+        reward_present_form:            can be 'reward' or 'penalty', the env will return either reward or penalty
+
+        reward_type:                    can be 'global' or 'local' or 'partial',
+                                        'global':
+                                                    the reward will be the overall reward of all vehicles on the map
+                                        'local':
+                                                    the reward will be only the vehicles of that intersection
+                                        'partial':
+                                                    the reward will be only the vehicles at the intersection, which are detected
+
+        log_waiting_time                when set True, it will log the waiting time at every reset
+        '''
         super().__init__()
         self.reward_range = (-float('inf'), float('inf'))
         self.visual = visual
         self.map_file = build_path(map_file)
-
+        if logger_type == 'baselines_logger':
+            from baselines import logger
+            self.logger = logger
+        self.log_waiting_time = log_waiting_time
         self.config_file = build_path(config_file)
         self.route_file = build_path(route_file)
         self.additional_file = build_path(additional_file)
@@ -476,7 +539,7 @@ class TrafficEnv(gym.Env):
         self.reset_to_same_time = False
         self.state_representation = state_representation
         self.traffic_light_module = traffic_light_module
-        self.reward_type = reward_type
+        self.reward_present_form = reward_present_form #can be reward or penalty
         self.penetration_rate = penetration_rate
         #self.return_as_reward = return_as_reward
         #lane_list = ['0_e_0', '0_n_0','0_s_0','0_w_0','e_0_0','n_0_0','s_0_0','w_0_0'] # temporary, in the future, get this from the .net.xml file
@@ -562,7 +625,7 @@ class TrafficEnv(gym.Env):
         lane_list = []
         for tlid in self.tl_id_list:
             tl_lane_list = remove_duplicates(traci.trafficlights.getControlledLanes(tlid))
-            self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation, reward_type = self.reward_type)
+            self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation, reward_present_form = self.reward_present_form)
             lane_list = lane_list + tl_lane_list
             #print 'controlled lane', self.tl_list[tlid].lane_list
         #lane_list = traci.lane.getIDList()
@@ -692,6 +755,13 @@ class TrafficEnv(gym.Env):
             self.flow_manager.travel_to_random_time()
             if self.flow_manager.reset_flow:
                 self.flow_manager.reset_flow()
+        if self.log_waiting_time:
+            if self.logger:
+                t_a, t_e, t_u = self.get_waiting_time()
+                self.logger.record_tabular("average waiting time", t_a)
+                self.logger.record_tabular("equipped waiting time", t_e)
+                self.logger.record_tabular("unequipped waiting time", t_u)
+                self.logger.dump_tabular()
         self.veh_list = {}
         self.time = 0
        #S if self.visual == False:
@@ -719,7 +789,7 @@ class TrafficEnv(gym.Env):
 
         return np.array(observation)
 
-    def get_result(self):
+    def get_waiting_time(self):
         total_waiting = 0.
         equipped_waiting = 0.
         non_equipped_waiting = 0.

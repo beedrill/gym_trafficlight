@@ -2,7 +2,7 @@
 The environment support intelligent traffic lights with full detection, as well as
 partial detection (new wireless communication based traffic lights)
 
-The environment currently does not implement **render()**, but the same functionality is achieved by using sumo-gui (setting `visual=True`))
+The environment currently does not implement **render()**, but the same functionality is achieved by using sumo-gui (setting `visual=True`), refer to [here](https://github.com/beedrill/gym_trafficlight#visualize-performance) for an example)
 
 # Installation
 ## Install env
@@ -16,7 +16,7 @@ To run baselines algorithm for the environment, __use this [folked version of ba
 - For GPU enabled machines:
 
 ```
-nvidia-docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines -v ~/saved_models:/home/saved_models beedrill/rltl-docker:gpu-py3 /bin/bash
+nvidia-docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -e OPENAI_LOGDIR='/home/training_logs' -e OPENAI_LOG_FORMAT='stdout,csv,tensorboard' -v ~/training_logs:/home/training_logs -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines -v ~/saved_models:/home/saved_models beedrill/rltl-docker:gpu-py3 /bin/bash
 cd /home/baselines
 pip install -e .
 cd /home/gym_trafficlight
@@ -26,7 +26,7 @@ pip install -e .
 - For CPU only machines:
 
 ```
-docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines -v ~/saved_models:/home/saved_models beedrill/rltl-docker:cpu-py3 /bin/bash
+docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -e OPENAI_LOGDIR='/home/training_logs' -e OPENAI_LOG_FORMAT='stdout,csv,tensorboard' -v ~/training_logs:/home/training_logs -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines -v ~/saved_models:/home/saved_models beedrill/rltl-docker:cpu-py3 /bin/bash
 cd /home/baselines
 pip install -e .
 cd /home/gym_trafficlight
@@ -67,6 +67,21 @@ Here is an example of saving the model:
 `python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7 --save_path=/path/to/your/saved_models`
 
 it will save the final model after training
+
+## Loading and Visualize Training Results
+
+A more thorough tutorial can be found [here](https://github.com/openai/baselines/blob/master/docs/viz/viz.ipynb)
+
+We give an example, in the host machine, do:
+
+```
+cd ~/training_logs/tb
+tensorboard --logdir=.
+```
+
+## View average waiting time curves
+You can also visualize traffic env specific results such as average waiting time of each episode, by adding `--log_waiting_time=True`
+
 ## Visualize Performance
 ### installing SUMO
 The traffic environment is based on an open source simulator [SUMO](http://sumo.dlr.de/wiki/Simulation_of_Urban_MObility_-_Wiki).
@@ -85,13 +100,15 @@ pip install -e .
 ```
 
 ### Example of Visualization
-one example of visualizaing the performance is, again, using the example __gym_trafficlight/examples/run_env.py__ script
+one example of visualizaing the performance is, again, using the example __gym_trafficlight/examples/run_env.py__ script, for example:
 
 `python3 run_env.py --alg=a2c --network=mlp --num_timesteps=0 --load_path=/your/model/path --play`
+
+make sure the args in the loading should be the same as args in training, otherwise loading will fail.
 
 ## More Examples
 Here is an example that successfully trained an agent with a2c:
 
 ```
-python3 run_env.py --alg=a2c --network=mlp --num_steps=2e7 --save_path=/path/to/saved/model --layer_norm=True --nsteps=200
+python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7 --save_path=/path/to/saved/model --layer_norm=True --nsteps=200
 ```

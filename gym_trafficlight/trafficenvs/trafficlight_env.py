@@ -427,7 +427,7 @@ class TrafficEnv(gym.Env):
     """
         openAI gym environment
         action_space
-        reset?
+        reset
             restart simulation
         step
             TL agent makes a step
@@ -850,6 +850,8 @@ class Lane():
         self.lane_reward = 0
         for vid in self.vehicle_list:
             if self.simulator.veh_list[vid].lane_position< TRUNCATE_DISTANCE:
+                #here implement reward type
+                
                 self.lane_reward+=(Vehicle.max_speed - self.simulator.veh_list[vid].speed)/Vehicle.max_speed
         #self.lane_reward = - self.lane_reward
         self.lane_reward = max(min(self.lane_reward, 20), 0) # reward should be possitive, trunccate with 20

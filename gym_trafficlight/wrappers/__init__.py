@@ -1,2 +1,3 @@
 from gym_trafficlight.wrappers.visualization_wrapper import TrafficVisualizationWrapper
 from gym_trafficlight.wrappers.set_init_wrapper import TrafficParameterSetWrapper
+from gym_trafficlight.wrappers.single_agent_wrapper import SingleAgentWrapper

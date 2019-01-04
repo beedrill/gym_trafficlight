@@ -107,7 +107,7 @@ one example of visualizaing the performance is, again, using the example __gym_t
 make sure the args in the loading should be the same as args in training, otherwise loading will fail.
 
 ## More Examples
-Here is an example that successfully trained an agent with a2c:
+Here is an example that trains an agent with a2c:
 
 ```
 python3 run_env.py --alg=a2c --network=mlp --num_timesteps=2e7 --save_path=/path/to/saved/model --layer_norm=True --nsteps=200

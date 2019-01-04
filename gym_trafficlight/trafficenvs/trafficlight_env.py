@@ -243,7 +243,10 @@ class SimpleTrafficLight(TrafficLight):
     def wrap_reward(self):
         if self.reward_present_form == 'reward':
             self.reward = -self.reward
-            self.reward += self.n_lanes * MAX_LANE_REWARD
+            max_reward = self.n_lanes * MAX_LANE_REWARD
+            self.reward += max_reward
+            if self.simulator.normalize_reward:
+                self.reward /= max_reward
         elif not self.reward_present_form == 'penalty':
             print('reward type wrong')
 
@@ -463,7 +466,8 @@ class TrafficEnv(gym.Env):
                  force_sumo = False,
                  reward_present_form = 'reward',
                  reward_type = 'local',
-                 log_waiting_time = False):
+                 log_waiting_time = False,
+                 normalize_reward = True):
         '''
         Parameters:
         -----------
@@ -520,6 +524,8 @@ class TrafficEnv(gym.Env):
                                                     the reward will be only the vehicles at the intersection, which are detected
 
         log_waiting_time                when set True, it will log the waiting time at every reset
+
+        normalize_reward                normalize reward
         '''
         super().__init__()
         self.reward_range = (-float('inf'), float('inf'))
@@ -534,6 +540,7 @@ class TrafficEnv(gym.Env):
         self.additional_file = build_path(additional_file)
         self.gui_setting_file = build_path(gui_setting_file)
         self.end_time = end_time
+        self.normalize_reward = normalize_reward
 
         self.veh_list = {}
         self.tl_list = {}
@@ -715,15 +722,15 @@ class TrafficEnv(gym.Env):
             #print actions
             tl.step(actions[i])
             observation.append(tl.traffic_state)
-            reward.append(self.tl_list[tlid].reward)
+            reward.append(tl.reward)
             i += 1
 
-        #print reward
+        #print(reward)
         observation = np.array(observation)
         reward = np.array(reward)
         info = (self.time, len(self.veh_list.keys()))
-        #if not type( observation[0][0]) in ['int',np.float64]:
-        #    print 'something wrong', observation[0][0], type(observation[0][0])
+        if not type( observation[0][0]) in ['int',np.float64]:
+            print('something wrong', observation[0][0], type(observation[0][0]))
         #print reward
         terminal = (self.time == self.episode_time)
         if self.no_hard_end:

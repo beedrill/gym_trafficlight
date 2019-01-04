@@ -25,6 +25,7 @@ from gym.utils import seeding
 #import numpy as np
 
 TRUNCATE_DISTANCE = 125.
+MAX_LANE_REWARD = 20
 
 def remove_duplicates(seq):
     seen = set()
@@ -214,6 +215,7 @@ class SimpleTrafficLight(TrafficLight):
         self.num_traffic_state = num_traffic_state
         self.traffic_state = [None for i in range(0, self.num_traffic_state)]
         self.lane_list = lane_list
+        self.n_lanes = len(lane_list)
         self.state_representation = state_representation
         # Traffic State 2
         # Lanes with car speed in its position
@@ -241,6 +243,7 @@ class SimpleTrafficLight(TrafficLight):
     def wrap_reward(self):
         if self.reward_present_form == 'reward':
             self.reward = -self.reward
+            self.reward += self.n_lanes * MAX_LANE_REWARD
         elif not self.reward_present_form == 'penalty':
             print('reward type wrong')
 
@@ -540,6 +543,7 @@ class TrafficEnv(gym.Env):
         self.state_representation = state_representation
         self.traffic_light_module = traffic_light_module
         self.reward_present_form = reward_present_form #can be reward or penalty
+        self.reward_type = reward_type
         self.penetration_rate = penetration_rate
         #self.return_as_reward = return_as_reward
         #lane_list = ['0_e_0', '0_n_0','0_s_0','0_w_0','e_0_0','n_0_0','s_0_0','w_0_0'] # temporary, in the future, get this from the .net.xml file
@@ -849,12 +853,16 @@ class Lane():
     def update_lane_reward(self):
         self.lane_reward = 0
         for vid in self.vehicle_list:
-            if self.simulator.veh_list[vid].lane_position< TRUNCATE_DISTANCE:
+            v = self.simulator.veh_list[vid]
+            if v.lane_position< TRUNCATE_DISTANCE:
                 #here implement reward type
-                
-                self.lane_reward+=(Vehicle.max_speed - self.simulator.veh_list[vid].speed)/Vehicle.max_speed
+                if self.simulator.reward_type == 'partial':
+                    if v.equipped == False:
+                        continue
+
+                self.lane_reward+=(Vehicle.max_speed - v.speed)/Vehicle.max_speed
         #self.lane_reward = - self.lane_reward
-        self.lane_reward = max(min(self.lane_reward, 20), 0) # reward should be possitive, trunccate with 20
+        self.lane_reward = max(min(self.lane_reward, MAX_LANE_REWARD), 0) # reward should be possitive, trunccate with MAX_LANE_REWARD
 
     def _get_vehicles(self):
         if self.simulator.visual == False:

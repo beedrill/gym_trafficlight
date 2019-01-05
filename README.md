@@ -47,8 +47,23 @@ To make the environment, refer to __gym_trafficlight/examples/test_install.py__:
 ```
 import gym
 import gym_trafficlight
-gym.make('TrafficLight-v0')
+from gym_trafficlight import TrafficEnv
+from gym_trafficlight.wrappers import  TrafficParameterSetWrapper
+args = TrafficEnv.get_default_init_parameters()
+args.update({'penetration_rate': 0.5})
+env = gym.make('TrafficLight-v0')
+env = TrafficParameterSetWrapper(env, args)
+
 ```
+
+## To specify parameters for TrafficEnv:
+'''
+import gym
+import gym_trafficlight
+from gym_trafficlight.wrapper import TrafficParameterSetWrapper
+
+'''
+
 ## Change Env Parameters
 One can change parameters by directly passing it:
 

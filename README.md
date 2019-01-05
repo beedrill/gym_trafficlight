@@ -39,7 +39,7 @@ to check installation, directly running this script:
 
 if successfully installed, it should print "installation success"
 
-# Examples
+# Basic Examples
 
 
 ## Make Environment
@@ -82,6 +82,8 @@ env = TrafficVisualizationWrapper(env)
 
 the difference between the above two approaches is that the first one can only be use in the init phase, it will re-init everything and lose all the data in the class, the second one will only switch the env  to be visual, hence can apply whenever.
 
+# Examples with OpenAI Baselines
+You can refer in the examples folder the __run_env.py__ code for running the env using baselines algorithms. The runner is a customized version of the original baselines runner and can be similarly run.
 
 ## Change Env Parameters
 One can change parameters by directly passing it:

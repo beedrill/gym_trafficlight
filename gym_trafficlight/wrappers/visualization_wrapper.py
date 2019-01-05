@@ -2,7 +2,9 @@ from gym import Wrapper
 class TrafficVisualizationWrapper(Wrapper):
     def __init__(self, env):
         super().__init__(env)
-        ori_env = env.unwrapped
+        ori_env = env
+        if env.unwrapped:
+            ori_env = env.unwrapped
         print('the original env is {}'.format(ori_env.__class__.__name__))
         if hasattr(ori_env, 'visual'):
             ori_env.visual = True

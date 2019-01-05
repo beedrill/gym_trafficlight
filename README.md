@@ -47,7 +47,16 @@ To make the environment, refer to __gym_trafficlight/examples/test_install.py__:
 ```
 import gym
 import gym_trafficlight
-from gym_trafficlight import TrafficEnv
+env = gym.make('TrafficLight-v0')
+```
+
+
+
+## To specify parameters for TrafficEnv:
+```
+import gym
+import gym_trafficlight
+from gym_trafficlight.trafficenvs import TrafficEnv
 from gym_trafficlight.wrappers import  TrafficParameterSetWrapper
 args = TrafficEnv.get_default_init_parameters()
 args.update({'penetration_rate': 0.5})
@@ -72,13 +81,7 @@ env = TrafficVisualizationWrapper(env)
 ```
 
 the difference between the above two approaches is that the first one can only be use in the init phase, it will re-init everything and lose all the data in the class, the second one will only switch the env  to be visual, hence can apply whenever.
-## To specify parameters for TrafficEnv:
-```
-import gym
-import gym_trafficlight
-from gym_trafficlight.wrapper import TrafficParameterSetWrapper
 
-```
 
 ## Change Env Parameters
 One can change parameters by directly passing it:

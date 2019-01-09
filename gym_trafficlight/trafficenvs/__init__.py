@@ -1,1 +1,1 @@
-from gym_trafficlight.trafficenvs.trafficlight_env import TrafficEnv
+from gym_trafficlight.trafficenvs.trafficlight_env import TrafficEnv, TrafficLightLuxembourg, SimpleTrafficLight

@@ -1,5 +1,6 @@
 import logging
 from gym.envs.registration import register
+from gym_trafficlight.trafficenvs import TrafficEnv, TrafficLightLuxembourg
 import os,sys
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -14,8 +15,17 @@ logger = logging.getLogger(__name__)
 register(
     id='TrafficLight-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=1000,
-    reward_threshold=1.0,
+    timestep_limit=3000,
     nondeterministic = True,
+)
+
+args = TrafficEnv.get_default_init_parameters()
+args['traffic_light_module'] = TrafficLightLuxembourg
+register(
+    id='TrafficLight-Luxembourg-v0',
+    entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
+    timestep_limit=3000,
+    nondeterministic = True,
+    kwargs = args
 )
 #print('registered to gym env')

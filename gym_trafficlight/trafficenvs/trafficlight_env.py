@@ -799,7 +799,8 @@ class TrafficEnv(gym.Env):
             reward.append(self.tl_list[tlid].reward)
 
         return np.array(observation)
-
+    def get_result(self):
+        return self.get_waiting_time()
     def get_waiting_time(self):
         total_waiting = 0.
         equipped_waiting = 0.

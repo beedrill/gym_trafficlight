@@ -141,6 +141,7 @@ class Vehicle():
         self.latest_time = simulator.time
         self.waiting_time = 0
         self.equipped = equipped
+        self.length = self._get_length()
 
     def _update_speed(self):
         if self.simulator.visual == False:
@@ -165,6 +166,12 @@ class Vehicle():
             if self.equipped:
                 #traci.vehicle.setColor(self.id,(255,0,0,0))
                 return
+
+    def _get_length(self):
+        if self.simulator.visual == False:
+            return libsumo.vehicle_getLength(self.id)
+        else:
+            return traci.vehicle.getLength(self.id)
 
     def step(self):
         self._update_appearance()
@@ -235,6 +242,8 @@ class SimpleTrafficLight(TrafficLight):
             return
         elif self.state_representation == 'sign':
             self.updateRLParameters_sign()
+        elif self.state_representation == 'full':
+            self.updateRLParameters_full()
         else:
             print('no such state representation supported')
             return
@@ -250,6 +259,23 @@ class SimpleTrafficLight(TrafficLight):
         elif not self.reward_present_form == 'penalty':
             print('reward type wrong')
 
+    def updateRLParameters_occupation(self):
+        #TODO: add occupation
+        sim = self.simulator
+        speed_occ = [sim.lane_list[lane_name].speed_occ for lane_name in self.lane_list]
+        #vid_occ = [sim.lane_list[lane_name].vid_occ for lane_name in self.lane_list]
+        #self.traffic_state = speed_occ+vid_occ
+        self.traffic_state = speed_occ
+        #For now we only use speed occupation
+        #TODO: in the future, implement more occupations
+        return self.traffic_state.copy()
+
+    def updateRLParameters_full(self):
+        occ_rep = self.updateRLParameters_occupation()
+        ori_rep = self.updateRLParameters_original()
+        self.traffic_state = (occ_rep, ori_rep)
+
+        return self.traffic_state
 
     def updateRLParameters_sign(self):
         lane_list = self.lane_list  # temporary, in the future, get this from the .net.xml file
@@ -290,6 +316,7 @@ class SimpleTrafficLight(TrafficLight):
         if self.simulator.whole_day:
             self.traffic_state[10] = self.simulator.current_day_time/float(24)
 
+        return self.traffic_state.copy()
 
         # Traffic State 2 I will update this part in another inherited class, I don't want to put this in the same class since it becomes messy
         #if self.MAP_SPEED:
@@ -302,6 +329,7 @@ class SimpleTrafficLight(TrafficLight):
         #        self.reward += sim.lane_list[lane_list[i]].lane_reward
 
     def updateRLParameters_original(self):
+        self.traffic_state = [None for i in range(0, self.num_traffic_state)]
         lane_list = self.lane_list  # temporary, in the future, get this from the .net.xml file
         sim = self.simulator
         self.reward = 0
@@ -328,6 +356,8 @@ class SimpleTrafficLight(TrafficLight):
 
         if self.simulator.whole_day:
             self.traffic_state[10] = self.simulator.current_day_time/float(24)
+
+        return self.traffic_state.copy()
     def step(self, action):
         self.current_phase_time += 1
         # make sure this phrase remain to keep track on current phase time
@@ -497,7 +527,7 @@ class TrafficEnv(gym.Env):
 
         whole_day:                      when setting true, every reset, it will call flow manager to reset flow and hour
 
-        state_representation:           can be 'sign' or 'original', as different ways of represent state
+        state_representation:           can be 'sign' or 'original', or 'full' as different ways of represent state
 
         flow_manager_file_prefix:       flow_manager's prefix parameter, will feed to flow manager
 
@@ -726,11 +756,12 @@ class TrafficEnv(gym.Env):
             i += 1
 
         #print(reward)
-        observation = np.array(observation)
+        if not self.state_representation == 'full':
+            observation = np.array(observation)
         reward = np.array(reward)
         info = (self.time, len(self.veh_list.keys()))
-        if not type( observation[0][0]) in ['int',np.float64]:
-            print('something wrong', observation[0][0], type(observation[0][0]))
+        #if not type( observation[0][0]) in ['int',np.float64]:
+            #print('something wrong', observation[0][0], type(observation[0][0]))
         #print reward
         terminal = (self.time == self.episode_time)
         if self.no_hard_end:
@@ -857,6 +888,8 @@ class Lane():
         self.lane_reward = 0
         self.penetration_rate = penetration_rate
         self.car_normalizing_number = self.length/6
+        self.speed_occ = np.full(int(TRUNCATE_DISTANCE),  -1)
+        self.vid_occ = np.full(int(TRUNCATE_DISTANCE), 0)
 
     def update_lane_reward(self):
         self.lane_reward = 0
@@ -895,6 +928,8 @@ class Lane():
 
 
         self.update_lane_reward()
+        if self.simulator.state_representation in ['full', 'occupation']:
+            self.update_occupation()
 
     def reset(self):
         self.vehicle_list = []
@@ -902,6 +937,23 @@ class Lane():
         self.detected_car_number = 0
         self.lane_reward = 0
 
+    def update_occupation(self):
+        ##represent the vehicles on the lane as a vector of occupation
+        length = int(TRUNCATE_DISTANCE)
+        speed_occ = np.full(length,  -1)
+        vid_occ = np.full(length, 0)
+        temp_id = 1
+        for vid in self.vehicle_list:
+            v = self.simulator.veh_list[vid]
+            if v.lane_position<length and v.equipped:
+                beg = int(v.lane_position)
+                end = min(beg+int(v.length),length)
+                for d in range(beg, end):
+                    speed_occ[d] = v.speed
+                    vid_occ[d] = temp_id
+                temp_id += 1
+        self.speed_occ = speed_occ
+        self.vid_occ = vid_occ
 
 class ActionSpaces(spaces.MultiDiscrete):
     def __init__(self, num_TL, num_actions):

@@ -19,6 +19,13 @@ register(
     nondeterministic = True,
 )
 
+register(
+    id='TrafficLight-Simple-v0',
+    entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
+    timestep_limit=3000,
+    nondeterministic = True,
+)
+
 args = TrafficEnv.get_default_init_parameters()
 args['traffic_light_module'] = TrafficLightLuxembourg
 register(

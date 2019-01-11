@@ -481,7 +481,7 @@ class TrafficEnv(gym.Env):
 
 
     def __init__(self, visual = False,
-                 logger_type = 'baselines_logger',
+                 logger_type = None,
                  map_file = '1-intersection/traffic.net.xml',
                  config_file = None,
                  route_file = '1-intersection/traffic.rou.xml',
@@ -511,7 +511,7 @@ class TrafficEnv(gym.Env):
         -----------
         visual:                         Is it for visualization, setting True will run sumo-gui as backend (much slower), setting False to run libsumo backend
 
-        logger_type:                    'baselines_logger' to use the logger openai baselines offer
+        logger_type:                    'baselines_logger' to use the logger openai baselines offer, set to None to record to file
 
         map_file:                       sumo map file name, only support files in the trafficenvs/map map_folder
 
@@ -573,6 +573,7 @@ class TrafficEnv(gym.Env):
         self.reward_range = (-float('inf'), float('inf'))
         self.visual = visual
         self.map_file = build_path(map_file)
+        self.logger = None
         if logger_type == 'baselines_logger':
             from baselines import logger
             self.logger = logger
@@ -816,12 +817,14 @@ class TrafficEnv(gym.Env):
             if self.flow_manager.reset_flow:
                 self.flow_manager.reset_flow()
         if self.log_waiting_time:
-            if self.logger:
+            if self.logger_type is 'baselines_logger':
                 t_a, t_e, t_u = self.get_waiting_time()
                 self.logger.record_tabular("average waiting time", t_a)
                 self.logger.record_tabular("equipped waiting time", t_e)
                 self.logger.record_tabular("unequipped waiting time", t_u)
                 self.logger.dump_tabular()
+            elif self.logger is None:
+                self.record_result()
         self.veh_list = {}
         self.time = 0
        #S if self.visual == False:

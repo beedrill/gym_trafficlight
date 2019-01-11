@@ -204,7 +204,7 @@ class TrafficLight():
 
 
 class SimpleTrafficLight(TrafficLight):
-    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = '', reward_present_form = 'penalty'):
+    def __init__(self, tlid, simulator, max_phase_time= 40., min_phase_time = 5, yellow_time = 3, num_traffic_state = 10, lane_list = [], state_representation = '', reward_present_form = 'penalty', observation_processor = None):
 
         TrafficLight.__init__(self, tlid, simulator)
         self.signal_groups = ['rrrrGGGGrrrrGGGG','rrrryyyyrrrryyyy','GGGGrrrrGGGGrrrr','yyyyrrrryyyyrrrr']
@@ -235,6 +235,9 @@ class SimpleTrafficLight(TrafficLight):
 
         self.reward = None
         self.reward_present_form = reward_present_form
+        self.observation_processor = observation_processor
+        #print(self.observation_processor)
+        #input()
 
     def updateRLParameters(self):
         if self.state_representation == 'original':
@@ -247,8 +250,11 @@ class SimpleTrafficLight(TrafficLight):
         else:
             print('no such state representation supported')
             return
+        self.wrap_observation()
         self.wrap_reward()
-
+    def wrap_observation(self):
+        if self.observation_processor:
+            self.traffic_state = self.observation_processor(self.traffic_state)
     def wrap_reward(self):
         if self.reward_present_form == 'reward':
             self.reward = -self.reward
@@ -497,7 +503,9 @@ class TrafficEnv(gym.Env):
                  reward_present_form = 'reward',
                  reward_type = 'local',
                  log_waiting_time = False,
-                 normalize_reward = True):
+                 normalize_reward = True,
+                 observation_processor = None,
+                 observation_as_np = True):
         '''
         Parameters:
         -----------
@@ -556,6 +564,10 @@ class TrafficEnv(gym.Env):
         log_waiting_time                when set True, it will log the waiting time at every reset
 
         normalize_reward                normalize reward
+
+        observation_processor           a callable to process the observation into the desired format
+
+        observation_as_np               set to true will call np.array() to format observation into numpy array
         '''
         super().__init__()
         self.reward_range = (-float('inf'), float('inf'))
@@ -582,6 +594,10 @@ class TrafficEnv(gym.Env):
         self.reward_present_form = reward_present_form #can be reward or penalty
         self.reward_type = reward_type
         self.penetration_rate = penetration_rate
+
+
+        self.observation_processor = observation_processor
+        self.observation_as_np = observation_as_np
         #self.return_as_reward = return_as_reward
         #lane_list = ['0_e_0', '0_n_0','0_s_0','0_w_0','e_0_0','n_0_0','s_0_0','w_0_0'] # temporary, in the future, get this from the .net.xml file
         #self.lane_list = {l:Lane(l,self,penetration_rate=penetration_rate) for l in lane_list}
@@ -590,6 +606,9 @@ class TrafficEnv(gym.Env):
         self.num_traffic_state = num_traffic_state
 
         self._init_sumo_info(tl_list = tl_list)
+
+        self.action_space = ActionSpaces(len(self.tl_list), 2) # action = 1 means move to next phase, otherwise means stay in current phase
+        self.observation_space = ObservationSpaces(len(self.tl_list), self.num_traffic_state)
         #for tlid in tl_list:
         #    self.tl_list[tlid] = SimpleTrafficLight(tlid, self, num_traffic_state = self.num_traffic_state)
         ###RL parameters
@@ -600,8 +619,7 @@ class TrafficEnv(gym.Env):
         self.whole_day = whole_day
         self.current_day_time = 0 # this is a value from 0 to 24
 
-        self.action_space = ActionSpaces(len(self.tl_list), 2) # action = 1 means move to next phase, otherwise means stay in current phase
-        self.observation_space = ObservationSpaces(len(self.tl_list), self.num_traffic_state)
+
 
         if self.visual == False:
             self.cmd = ['sumo',
@@ -666,7 +684,7 @@ class TrafficEnv(gym.Env):
         lane_list = []
         for tlid in self.tl_id_list:
             tl_lane_list = remove_duplicates(traci.trafficlights.getControlledLanes(tlid))
-            self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation, reward_present_form = self.reward_present_form)
+            self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation, reward_present_form = self.reward_present_form, observation_processor = self.observation_processor)
             lane_list = lane_list + tl_lane_list
             #print 'controlled lane', self.tl_list[tlid].lane_list
         #lane_list = traci.lane.getIDList()
@@ -756,7 +774,7 @@ class TrafficEnv(gym.Env):
             i += 1
 
         #print(reward)
-        if not self.state_representation == 'full':
+        if self.observation_as_np:
             observation = np.array(observation)
         reward = np.array(reward)
         info = (self.time, len(self.veh_list.keys()))
@@ -940,8 +958,8 @@ class Lane():
     def update_occupation(self):
         ##represent the vehicles on the lane as a vector of occupation
         length = int(TRUNCATE_DISTANCE)
-        speed_occ = np.full(length,  -1)
-        vid_occ = np.full(length, 0)
+        speed_occ = np.full(length,  -1, dtype = np.float32)
+        vid_occ = np.full(length, 0, dtype = np.float32)
         temp_id = 1
         for vid in self.vehicle_list:
             v = self.simulator.veh_list[vid]

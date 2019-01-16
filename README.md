@@ -94,7 +94,7 @@ The arg `--parameter_rate=0.5` will be directly passed to the env constructor. T
 
 ## Change env parameter on every reset
 Sometimes, we want the env gradually changes, for example, we want the penetration rate gradually increase, for this, you can use **ResetManager** class. Here is an example to linearly increase penetration rate:
-'''python
+```python
 from gym_trafficlight import PenetrationRateManager
 prm = PenetrationRateManager(
   trend = 'linear',
@@ -105,7 +105,7 @@ prm = PenetrationRateManager(
 env = gym.make('TrafficLight-Lust12408-midnight-v0')
 args ={'reset_manager': PenetrationRateManager()}
 env = TrafficParameterSetWrapper(env, args).unwrapped
-'''
+```
 # Environments
 You can customize environment by passing in environment parameters. We also have some pre-configured environments registered, check gym_trafficlight/\__init__.py for more details. All these environments are only different in the initialization parameter, so of course, you can also use one env and pass in the parameter to yield equivalent result. The registered environments are:
 

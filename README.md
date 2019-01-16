@@ -103,7 +103,7 @@ prm = PenetrationRateManager(
   pr_end = 1
   )
 env = gym.make('TrafficLight-Lust12408-midnight-v0')
-args ={'reset_manager': PenetrationRateManager()}
+args ={'reset_manager': prm}
 env = TrafficParameterSetWrapper(env, args).unwrapped
 ```
 # Environments

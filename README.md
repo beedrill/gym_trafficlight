@@ -82,16 +82,6 @@ env = TrafficVisualizationWrapper(env)
 
 the difference between the above two approaches is that the first one can only be use in the init phase, it will re-init everything and lose all the data in the class, the second one will only switch the env  to be visual, hence can apply whenever.
 
-# Examples with OpenAI Baselines
-You can refer in the examples folder the __run_env.py__ code for running the env using baselines algorithms. The runner is a customized version of the original baselines runner and can be similarly run.
-
-## Change Env Parameters
-One can change parameters by directly passing it:
-
-`python3 run_env.py --alg=a2c --penetration_rate=0.5`
-
-The arg `--parameter_rate=0.5` will be directly passed to the env constructor. The parameter updating is done through a wrapper.
-
 ## Change env parameter on every reset
 Sometimes, we want the env gradually changes, for example, we want the penetration rate gradually increase, for this, you can use **ResetManager** class. Here is an example to linearly increase penetration rate:
 ```python
@@ -124,6 +114,18 @@ This is a traffic light configuration directly taken from LusT traffic scenario 
   env_rush_hours = gym.make('TrafficLight-Lust12408-rush-hour-v0') #this has 8 a.m. car arrival rate
   env_regular = gym.make('TrafficLight-Lust12408-regular-time-v0') #this has 14 a.m. car arrival rate
 ```
+
+# Examples with OpenAI Baselines
+You can refer in the examples folder the __run_env.py__ code for running the env using baselines algorithms. The runner is a customized version of the original baselines runner and can be similarly run.
+
+## Change Env Parameters
+One can change parameters by directly passing it:
+
+`python3 run_env.py --alg=a2c --penetration_rate=0.5`
+
+The arg `--parameter_rate=0.5` will be directly passed to the env constructor. The parameter updating is done through a wrapper.
+
+
 ## Training
 an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__:
 

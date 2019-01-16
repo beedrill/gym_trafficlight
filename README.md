@@ -92,6 +92,24 @@ One can change parameters by directly passing it:
 
 The arg `--parameter_rate=0.5` will be directly passed to the env constructor. The parameter updating is done through a wrapper.
 
+# Environments
+You can customize environment by passing in environment parameters. We also have some pre-configured environments registered, check gym_trafficlight/\__init__.py for more details. All these environments are only different in the initialization parameter, so of course, you can also use one env and pass in the parameter to yield equivalent result. The registered environments are:
+
+* **Simple Environment:** Each approaches has only one lane, with a simple 2-phase traffic light, all the vehicles are going straight (no turn). This is a good starting point to verify an algorithm. We offer 3 **Simple Environments**:
+```python
+  env_sparse = gym.make('TrafficLight-simple-sparse-v0') #this has light car arrival rate
+  env_medium = gym.make('TrafficLight-simple-medium-v0') #this has medium car arrival rate
+  env_dense = gym.make('TrafficLight-simple-dense-v0') #this has dense car arrival rate
+```
+
+* **Luxembourg Traffic Light 12408**
+This is a traffic light configuration directly taken from LusT traffic scenario (of Luxembourg). Each approach has 3 lanes, the traffic light have 4 phases, 2 straight and 2 left-turn. We offer the car flow of 2 a.m., 8 a.m, and 14 a.m, corresponds to midnight, rush hours, and regular hours.
+
+```python
+  env_midnight = gym.make('TrafficLight-Lust12408-midnight-v0') #this has 2 a.m. car arrival rate
+  env_rush_hours = gym.make('TrafficLight-Lust12408-rush-hour-v0') #this has 8 a.m. car arrival rate
+  env_regular = gym.make('TrafficLight-Lust12408-regular-time-v0') #this has 14 a.m. car arrival rate
+```
 ## Training
 an example of running a2c from baselines can be found in __gym_trafficlight/examples/run_env.py__:
 

@@ -407,7 +407,9 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
         num_traffic_state = 10,
         lane_list = [],
         state_representation = '',
-        signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
+        signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr'],
+        reward_present_form = 'penalty',
+        observation_processor = None):
         #signal_groups = ['rrrGGGGgrrrGGGGg', 'rrryyyygrrryyyyg', 'rrrrrrrGrrrrrrrG', 'rrrrrrryrrrrrrry', 'GGgGrrrrGGgGrrrr', 'yygyrrrryygyrrrr', 'rrGrrrrrrrGrrrrr', 'rryrrrrrrryrrrrr']):
         SimpleTrafficLight.__init__(self,tlid, simulator, max_phase_time= max_phase_time, min_phase_time = min_phase_time,
             yellow_time = yellow_time, num_traffic_state = num_traffic_state, lane_list = lane_list, state_representation = state_representation,reward_present_form = reward_present_form)
@@ -456,8 +458,8 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
         elif self.simulator.whole_day:
             self.traffic_state[2*n_lane+2] = self.simulator.current_day_time/float(24)
             #print(self.simulator.current_day_time)
+        return self.traffic_state.copy()
 
-        #print(self.traffic_state)
 def build_path(rel_path):
     ## build abs path from relative path, return None if input is None
     abs_path = None
@@ -493,7 +495,7 @@ class TrafficEnv(gym.Env):
                  num_traffic_state = 10,
                  record_file = "record.txt",
                  whole_day = False,
-                 state_representation = 'sign',
+                 state_representation = 'original',
                  flow_manager_file_prefix = '1-intersection/whole-day-flow/traffic',
                  traffic_light_module = SimpleTrafficLight,
                  tl_list = None,
@@ -505,7 +507,9 @@ class TrafficEnv(gym.Env):
                  log_waiting_time = False,
                  normalize_reward = True,
                  observation_processor = None,
-                 observation_as_np = True):
+                 observation_as_np = True,
+                 num_actions = 2,
+                 ):
         '''
         Parameters:
         -----------
@@ -608,7 +612,7 @@ class TrafficEnv(gym.Env):
 
         self._init_sumo_info(tl_list = tl_list)
 
-        self.action_space = ActionSpaces(len(self.tl_list), 2) # action = 1 means move to next phase, otherwise means stay in current phase
+        self.action_space = ActionSpaces(len(self.tl_list), num_actions) # action = 1 means move to next phase, otherwise means stay in current phase
         self.observation_space = ObservationSpaces(len(self.tl_list), self.num_traffic_state)
         #for tlid in tl_list:
         #    self.tl_list[tlid] = SimpleTrafficLight(tlid, self, num_traffic_state = self.num_traffic_state)
@@ -730,7 +734,7 @@ class TrafficEnv(gym.Env):
         if self.visual == False:
             libsumo.simulationStep()
             self.time += 1
-            #print(self.time)
+            #print('time is {}'.format(self.time))
             return
         else:
             self.time += 1

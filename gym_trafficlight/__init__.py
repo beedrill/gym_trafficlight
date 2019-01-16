@@ -1,6 +1,7 @@
 import logging
 from gym.envs.registration import register
 from gym_trafficlight.trafficenvs import TrafficEnv, TrafficLightLuxembourg
+from gym_trafficlight.utils import PenetrationRateManager
 import os,sys
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -9,6 +10,7 @@ if 'SUMO_HOME' in os.environ:
     #f.close()
 else:
     print('warning: no SUMO_HOME declared, please declare SUMO_HOME')
+
 
 logger = logging.getLogger(__name__)
 

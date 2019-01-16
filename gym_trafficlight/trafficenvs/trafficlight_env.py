@@ -509,6 +509,7 @@ class TrafficEnv(gym.Env):
                  observation_processor = None,
                  observation_as_np = True,
                  num_actions = 2,
+                 reset_manager = None
                  ):
         '''
         Parameters:
@@ -578,6 +579,7 @@ class TrafficEnv(gym.Env):
         self.visual = visual
         self.map_file = build_path(map_file)
         self.logger = None
+        self.logger_type = logger_type
         if logger_type == 'baselines_logger':
             from baselines import logger
             self.logger = logger
@@ -599,6 +601,9 @@ class TrafficEnv(gym.Env):
         self.reward_present_form = reward_present_form #can be reward or penalty
         self.reward_type = reward_type
         self.penetration_rate = penetration_rate
+        if reset_manager:
+            self.reset_manager = reset_manager
+            self.reset_manager.bind(self)
 
 
         self.observation_processor = observation_processor
@@ -698,7 +703,7 @@ class TrafficEnv(gym.Env):
             #print 'lane list', lane_list
             if l.startswith(':'):
                 continue
-            self.lane_list[l] = Lane(l,self,penetration_rate=self.penetration_rate, length = traci.lane.getLength(l))
+            self.lane_list[l] = Lane(l,self, length = traci.lane.getLength(l))
             #print 'lane list', l
 
         #print len(self.lane_list.keys())
@@ -854,6 +859,9 @@ class TrafficEnv(gym.Env):
             observation.append(tl.traffic_state)
             reward.append(self.tl_list[tlid].reward)
 
+        if self.reset_manager:
+            self.reset_manager.on_reset()
+
         return np.array(observation)
     def get_result(self):
         return self.get_waiting_time()
@@ -878,7 +886,7 @@ class TrafficEnv(gym.Env):
                 n_non_equipped += 1
                 non_equipped_waiting += v.waiting_time
 
-
+        #print('e:{}, u:{}'.format(n_equipped, n_non_equipped))
         self.average_waiting_time = total_waiting/n_total if n_total>0 else 0
         self.equipped_average_waiting_time = equipped_waiting/n_equipped if n_equipped>0 else 0
         self.nonequipped_average_waiting_time = non_equipped_waiting/n_non_equipped if n_non_equipped>0 else 0
@@ -903,7 +911,7 @@ class TrafficEnv(gym.Env):
 
 
 class Lane():
-    def __init__(self,lane_id,simulator,length = 251,penetration_rate = 1):
+    def __init__(self,lane_id,simulator,length = 251):
         self.id = lane_id
         self.simulator = simulator
         self.vehicle_list = []
@@ -911,7 +919,7 @@ class Lane():
         self.car_number = 0
         self.detected_car_number = 0
         self.lane_reward = 0
-        self.penetration_rate = penetration_rate
+        #self.penetration_rate = penetration_rate
         self.car_normalizing_number = self.length/6
         self.speed_occ = np.full(int(TRUNCATE_DISTANCE),  -1)
         self.vid_occ = np.full(int(TRUNCATE_DISTANCE), 0)
@@ -945,7 +953,7 @@ class Lane():
         self.detected_car_number = 0
         for vid in vidlist:
             if not vid in self.simulator.veh_list.keys():
-                self.simulator.veh_list[vid]= Vehicle(vid,self.simulator, equipped = random.random()<self.penetration_rate)
+                self.simulator.veh_list[vid]= Vehicle(vid,self.simulator, equipped = random.random()<self.simulator.penetration_rate)
             self.simulator.veh_list[vid].lane = self
             self.simulator.veh_list[vid].step()
             if self.simulator.veh_list[vid].equipped == True and self.simulator.veh_list[vid].lane_position< TRUNCATE_DISTANCE:

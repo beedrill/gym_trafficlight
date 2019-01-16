@@ -92,6 +92,20 @@ One can change parameters by directly passing it:
 
 The arg `--parameter_rate=0.5` will be directly passed to the env constructor. The parameter updating is done through a wrapper.
 
+## Change env parameter on every reset
+Sometimes, we want the env gradually changes, for example, we want the penetration rate gradually increase, for this, you can use **ResetManager** class. Here is an example to linearly increase penetration rate:
+'''python
+from gym_trafficlight import PenetrationRateManager
+prm = PenetrationRateManager(
+  trend = 'linear',
+  transition_time = 3*365, #3 years
+  pr_start = 0.05,
+  pr_end = 1
+  )
+env = gym.make('TrafficLight-Lust12408-midnight-v0')
+args ={'reset_manager': PenetrationRateManager()}
+env = TrafficParameterSetWrapper(env, args).unwrapped
+'''
 # Environments
 You can customize environment by passing in environment parameters. We also have some pre-configured environments registered, check gym_trafficlight/\__init__.py for more details. All these environments are only different in the initialization parameter, so of course, you can also use one env and pass in the parameter to yield equivalent result. The registered environments are:
 
@@ -103,7 +117,7 @@ You can customize environment by passing in environment parameters. We also have
 ```
 
 * **Luxembourg Traffic Light 12408**
-This is a traffic light configuration directly taken from LusT traffic scenario (of Luxembourg). Each approach has 3 lanes, the traffic light have 4 phases, 2 straight and 2 left-turn. We offer the car flow of 2 a.m., 8 a.m, and 14 a.m, corresponds to midnight, rush hours, and regular hours.
+This is a traffic light configuration directly taken from LusT traffic scenario (of Luxembourg) intersection 12408. Each approach has 3 lanes, the traffic light have 4 phases, 2 straight and 2 left-turn. We offer the car flow of 2 a.m., 8 a.m, and 14 a.m, corresponds to midnight, rush hours, and regular hours.
 
 ```python
   env_midnight = gym.make('TrafficLight-Lust12408-midnight-v0') #this has 2 a.m. car arrival rate

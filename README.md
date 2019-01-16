@@ -25,7 +25,7 @@ pip install -e .
 
 - For CPU only machines:
 
-```
+```bash
 docker run -it --name rltl_baselines -e SUMO_HOME='/home/sumo' -e OPENAI_LOGDIR='/home/training_logs' -e OPENAI_LOG_FORMAT='stdout,csv,tensorboard' -v ~/training_logs:/home/training_logs -v ~/gym_trafficlight:/home/gym_trafficlight -v ~/baselines:/home/baselines -v ~/saved_models:/home/saved_models beedrill/rltl-docker:cpu-py3 /bin/bash
 cd /home/baselines
 pip install -e .
@@ -44,7 +44,7 @@ if successfully installed, it should print "installation success"
 
 ## Make Environment
 To make the environment, refer to __gym_trafficlight/examples/test_install.py__:
-```
+```python
 import gym
 import gym_trafficlight
 env = gym.make('TrafficLight-v0')
@@ -53,7 +53,7 @@ env = gym.make('TrafficLight-v0')
 
 
 ## To specify parameters for TrafficEnv:
-```
+```python
 import gym
 import gym_trafficlight
 from gym_trafficlight.trafficenvs import TrafficEnv
@@ -67,7 +67,7 @@ env = TrafficParameterSetWrapper(env, args)
 
 ## Visualize Environment
 Refer also to [here](https://github.com/beedrill/gym_trafficlight#visualize-performance), here is another example:
-```
+```python
 args = TrafficEnv.get_default_init_parameters()
 args.update({'visual': True})
 env = TrafficParameterSetWrapper(env, args)
@@ -75,7 +75,7 @@ env = TrafficParameterSetWrapper(env, args)
 ```
 
 or use visualization wrapper:
-```
+```python
 from gym_trafficlight.wrappers import TrafficVisualizationWrapper
 env = TrafficVisualizationWrapper(env)
 ```
@@ -144,7 +144,7 @@ A more thorough tutorial can be found [here](https://github.com/openai/baselines
 
 We give an example, in the host machine, do:
 
-```
+```bash
 cd ~/training_logs/tb
 tensorboard --logdir=.
 ```
@@ -160,7 +160,7 @@ Visualization of performance can't be directly observed within the docker contai
 ### Installing Dependency
 As visualization is running [traci](http://sumo.dlr.de/wiki/TraCI) as interface, it is not required to install libsumo (which is installed in the docker image). But there is still the need of installing some other dependencies. Here gives an example of configuring a conda virtual environment using [Anaconda](https://www.anaconda.com/) (for visualization purpose, only a cpu version of tensorflow is sufficient). **when creating the virtual environment, make sure the default python of the virtual environment is python 3.6**
 
-```
+```bash
 conda create -n rltl_baselines tensorflow
 conda activate rltl_baselines
 cd ~/baselines

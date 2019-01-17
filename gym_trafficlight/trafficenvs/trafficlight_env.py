@@ -677,7 +677,7 @@ class TrafficEnv(gym.Env):
         if '--random' in self.cmd:
             self.cmd.remove('--random')
         self.cmd+= ['--seed', str(self.seed)]
-        print(self.cmd)
+        #print(self.cmd)
         #time.sleep(10)
         return
 
@@ -805,8 +805,8 @@ class TrafficEnv(gym.Env):
         if self.no_hard_end:
             terminal = self._simulation_check_end()
         #print(terminal, self.time)
-        print('observation: {}'.format(observation))
-        print('reward: {}'.format(reward))
+        #print('observation: {}'.format(observation))
+        #print('reward: {}'.format(reward))
         return observation, reward, terminal, info
 
     def start(self):

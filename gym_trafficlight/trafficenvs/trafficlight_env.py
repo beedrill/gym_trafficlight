@@ -590,7 +590,7 @@ class TrafficEnv(gym.Env):
         self.gui_setting_file = build_path(gui_setting_file)
         self.end_time = end_time
         self.normalize_reward = normalize_reward
-
+        self.init_seed = None
         self.veh_list = {}
         self.tl_list = {}
         self.is_started = False
@@ -670,13 +670,22 @@ class TrafficEnv(gym.Env):
         self.record_file = record_file
     def reinitialize_parameters(self, **kwargs):
         self.__init__(**kwargs)
-
-    def seed(self, seed = None):
-        self.seed = seed
-        self.seed += int(time.time())
+    def implement_seed(self):
         if '--random' in self.cmd:
             self.cmd.remove('--random')
-        self.cmd+= ['--seed', str(self.seed)]
+        if '--seed' in self.cmd:
+            i = self.cmd.index('--seed')
+            self.cmd.pop(i+1)
+            self.cmd.pop(i)
+        self.cmd+= ['--seed', str(self.init_seed+int(time.time()))]
+        print(self.cmd)
+        #input()
+
+    def seed(self, seed = None):
+        self.init_seed = seed
+        self.implement_seed()
+        #self.seed += int(time.time())
+
         #print(self.cmd)
         #time.sleep(10)
         return
@@ -805,8 +814,8 @@ class TrafficEnv(gym.Env):
         if self.no_hard_end:
             terminal = self._simulation_check_end()
         #print(terminal, self.time)
-        #print('observation: {}'.format(observation))
-        #print('reward: {}'.format(reward))
+        print('observation: {}'.format(observation))
+        print('reward: {}'.format(reward))
         return observation, reward, terminal, info
 
     def start(self):
@@ -832,6 +841,8 @@ class TrafficEnv(gym.Env):
     def _reset(self):
         if self.is_started == True:
             self.stop()
+        if self.init_seed:
+            self.implement_seed()
         if self.whole_day and self.reset_to_same_time == False:
             self.flow_manager.travel_to_random_time()
             if self.flow_manager.reset_flow:

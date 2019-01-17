@@ -678,7 +678,7 @@ class TrafficEnv(gym.Env):
             self.cmd.pop(i+1)
             self.cmd.pop(i)
         self.cmd+= ['--seed', str(self.init_seed+int(time.time()))]
-        print(self.cmd)
+        #print(self.cmd)
         #input()
 
     def seed(self, seed = None):
@@ -814,8 +814,8 @@ class TrafficEnv(gym.Env):
         if self.no_hard_end:
             terminal = self._simulation_check_end()
         #print(terminal, self.time)
-        print('observation: {}'.format(observation))
-        print('reward: {}'.format(reward))
+        #print('observation: {}'.format(observation))
+        #print('reward: {}'.format(reward))
         return observation, reward, terminal, info
 
     def start(self):

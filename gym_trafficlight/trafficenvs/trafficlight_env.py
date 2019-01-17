@@ -6,6 +6,7 @@ except ImportError:
 import os, sys
 import inspect
 import xml.etree.ElementTree as ET
+import time # this is only for debugging
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
@@ -15,7 +16,6 @@ else:
     print('warning: no SUMO_HOME declared')
 import traci
 
-from time import time
 import numpy as np
 import random
 
@@ -601,8 +601,8 @@ class TrafficEnv(gym.Env):
         self.reward_present_form = reward_present_form #can be reward or penalty
         self.reward_type = reward_type
         self.penetration_rate = penetration_rate
+        self.reset_manager = reset_manager
         if reset_manager:
-            self.reset_manager = reset_manager
             self.reset_manager.bind(self)
 
 
@@ -670,6 +670,16 @@ class TrafficEnv(gym.Env):
         self.record_file = record_file
     def reinitialize_parameters(self, **kwargs):
         self.__init__(**kwargs)
+
+    def seed(self, seed = None):
+        self.seed = seed
+        self.seed += int(time.time())
+        if '--random' in self.cmd:
+            self.cmd.remove('--random')
+        self.cmd+= ['--seed', str(self.seed)]
+        print(self.cmd)
+        #time.sleep(10)
+        return
 
     def step_(self):
         #use step() for standard operation, this is only for normal traffic light
@@ -795,7 +805,8 @@ class TrafficEnv(gym.Env):
         if self.no_hard_end:
             terminal = self._simulation_check_end()
         #print(terminal, self.time)
-        #print('reward: {}'.format(reward))
+        print('observation: {}'.format(observation))
+        print('reward: {}'.format(reward))
         return observation, reward, terminal, info
 
     def start(self):

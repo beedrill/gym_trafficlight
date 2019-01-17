@@ -242,7 +242,6 @@ class SimpleTrafficLight(TrafficLight):
     def updateRLParameters(self):
         if self.state_representation == 'original':
             self.updateRLParameters_original()
-            return
         elif self.state_representation == 'sign':
             self.updateRLParameters_sign()
         elif self.state_representation == 'full':

@@ -4,6 +4,19 @@ partial detection (new wireless communication based traffic lights)
 
 The environment currently does not implement **render()**, but the same functionality is achieved by using sumo-gui (setting `visual=True`), refer to [here](https://github.com/beedrill/gym_trafficlight#visualize-performance) for an example)
 
+# Citing
+To cite this repo for publication:
+```
+@misc{gym_trafficlight,
+  author = {Rusheng Zhang},
+  title = {Gym TrafficLight Environment},
+  year = {2018},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/beedrill/gym_trafficlight}},
+}
+```
+
 # Installation
 ## Install env
 `pip install -e .`

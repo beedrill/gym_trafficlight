@@ -251,6 +251,7 @@ class SimpleTrafficLight(TrafficLight):
             return
         self.wrap_observation()
         self.wrap_reward()
+        #print(self.traffic_state)
     def wrap_observation(self):
         if self.observation_processor:
             self.traffic_state = self.observation_processor(self.traffic_state)
@@ -424,7 +425,7 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
     def updateRLParameters_sign(self):
         print("sign representation is currently unavailable")
     def updateRLParameters_original(self):
-
+        self.traffic_state = [None for i in range(0, self.num_traffic_state)]
         lane_list = self.lane_list  # temporary, in the future, get this from the .net.xml file
         sim = self.simulator
         self.reward = 0
@@ -457,6 +458,7 @@ class TrafficLightLuxembourg(SimpleTrafficLight):
         elif self.simulator.whole_day:
             self.traffic_state[2*n_lane+2] = self.simulator.current_day_time/float(24)
             #print(self.simulator.current_day_time)
+        #print( self.traffic_state)
         return self.traffic_state.copy()
 
 def build_path(rel_path):
@@ -574,6 +576,10 @@ class TrafficEnv(gym.Env):
         observation_as_np               set to true will call np.array() to format observation into numpy array
         '''
         super().__init__()
+        temp = locals().copy()
+        self.current_parameter_set = {k: temp[k] for k in self.get_default_init_parameters().keys()} ## save all the parameter passed in to a dictionary
+
+        #self.current_parameter_set = locals()
         self.reward_range = (-float('inf'), float('inf'))
         self.visual = visual
         self.map_file = build_path(map_file)
@@ -668,6 +674,8 @@ class TrafficEnv(gym.Env):
             self.cmd+=['--gui-settings-file', self.gui_setting_file]
         self.record_file = record_file
     def reinitialize_parameters(self, **kwargs):
+        print('reinit with parameters:')
+        print(kwargs)
         self.__init__(**kwargs)
     def implement_seed(self):
         if '--random' in self.cmd:

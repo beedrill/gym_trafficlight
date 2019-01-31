@@ -71,8 +71,7 @@ import gym
 import gym_trafficlight
 from gym_trafficlight.trafficenvs import TrafficEnv
 from gym_trafficlight.wrappers import  TrafficParameterSetWrapper
-args = TrafficEnv.get_default_init_parameters()
-args.update({'penetration_rate': 0.5})
+args={'penetration_rate': 0.5}
 env = gym.make('TrafficLight-v0')
 env = TrafficParameterSetWrapper(env, args)
 
@@ -82,7 +81,7 @@ env = TrafficParameterSetWrapper(env, args)
 Refer also to [here](https://github.com/beedrill/gym_trafficlight#visualize-performance), here is another example:
 ```python
 args = TrafficEnv.get_default_init_parameters()
-args.update({'visual': True})
+args={'visual': True}
 env = TrafficParameterSetWrapper(env, args)
 
 ```

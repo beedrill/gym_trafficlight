@@ -217,7 +217,7 @@ class SimpleTrafficLight(TrafficLight):
         self.min_phase_time = min_phase_time
         self.yellow_time = yellow_time
 
-        # Traffic State 1
+        # Traffic State 1simple_sparse_partial_pen01
         # (car num, .. , dist to TL, .., current phase time)
         self.num_traffic_state = num_traffic_state
         self.traffic_state = [None for i in range(0, self.num_traffic_state)]

@@ -87,6 +87,7 @@ args['traffic_light_module'] = TrafficLightLuxembourg
 args['map_file'] = '1-intersection-Lust-12408/detailed/traffic.net.xml'
 args['route_file'] = '1-intersection-Lust-12408/detailed/traffic-2.rou.xml'
 args['num_traffic_state'] = 26
+args['tl_list'] = ['0']
 
 register(
     id='TrafficLight-Lust12408-midnight-eval-v0',

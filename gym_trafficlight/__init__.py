@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 register(
     id='TrafficLight-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
 )
 
@@ -25,7 +25,7 @@ register(
 register(
     id='TrafficLight-simple-sparse-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = {'route_file':'1-intersection/traffic-sparse.rou.xml'},
 )
@@ -33,7 +33,7 @@ register(
 register(
     id='TrafficLight-simple-medium-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = {'route_file':'1-intersection/traffic-medium.rou.xml'},
 )
@@ -41,7 +41,7 @@ register(
 register(
     id='TrafficLight-simple-dense-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = {'route_file':'1-intersection/traffic-dense.rou.xml'},
 )
@@ -55,7 +55,7 @@ args['num_traffic_state'] = 26
 register(
     id='TrafficLight-Lust12408-midnight-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = args,
 )
@@ -66,7 +66,7 @@ args['route_file'] = '1-intersection-Lust-12408/8/traffic.rou.xml'
 register(
     id='TrafficLight-Lust12408-rush-hour-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = args,
 )
@@ -77,7 +77,7 @@ args['route_file'] = '1-intersection-Lust-12408/14/traffic.rou.xml'
 register(
     id='TrafficLight-Lust12408-regular-time-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = args,
 )
@@ -92,7 +92,7 @@ args['tl_list'] = ['0']
 register(
     id='TrafficLight-Lust12408-midnight-eval-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = args,
 )
@@ -102,7 +102,7 @@ args['route_file'] = '1-intersection-Lust-12408/detailed/traffic-8.rou.xml'
 register(
     id='TrafficLight-Lust12408-rush-hour-eval-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = args,
 )
@@ -112,7 +112,7 @@ args['route_file'] = '1-intersection-Lust-12408/detailed/traffic-14.rou.xml'
 register(
     id='TrafficLight-Lust12408-regular-time-eval-v0',
     entry_point='gym_trafficlight.trafficenvs:TrafficEnv',
-    timestep_limit=3000,
+    #timestep_limit=3000,
     nondeterministic = True,
     kwargs = args,
 )

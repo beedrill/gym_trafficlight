@@ -510,7 +510,8 @@ class TrafficEnv(gym.Env):
                  observation_processor = None,
                  observation_as_np = True,
                  num_actions = 2,
-                 reset_manager = None
+                 reset_manager = None,
+                 action_delay = None
                  ):
         '''
         Parameters:
@@ -574,10 +575,12 @@ class TrafficEnv(gym.Env):
         observation_processor           a callable to process the observation into the desired format
 
         observation_as_np               set to true will call np.array() to format observation into numpy array
+
+        action_delay                    delay the action
         '''
         super().__init__()
         temp = locals().copy()
-        self.current_parameter_set = {k: temp[k] for k in self.get_default_init_parameters().keys()} ## save all the parameter passed in to a dictionary
+        self.current_parameter_set = {k: temp[k] for k in self.get_default_init_parameters().keys()} ## save all the parameter passed into a dictionary
 
         #self.current_parameter_set = locals()
         self.reward_range = (-float('inf'), float('inf'))
@@ -633,8 +636,9 @@ class TrafficEnv(gym.Env):
 
         self.whole_day = whole_day
         self.current_day_time = 0 # this is a value from 0 to 24
-
-
+        self.action_delay = action_delay
+        if action_delay:
+            self.action_buffer = {}
 
         if self.visual == False:
             self.cmd = ['sumo',
@@ -801,6 +805,13 @@ class TrafficEnv(gym.Env):
         observation = []
         reward = []
         i = 0
+        if self.action_delay:
+            self.action_buffer[self.time + self.action_delay] = actions
+            try:
+                actions = self.action_buffer[self.time]
+            except KeyError as e:
+                print ('no stored actions for time {}, sample one randomly'.format(e))
+                actions = self.action_space.sample()
         for tlid in self.tl_id_list:
             tl = self.tl_list[tlid]
             #print actions
@@ -1023,8 +1034,8 @@ class ActionSpaces(spaces.MultiDiscrete):
         self.num_TL = num_TL
         self.n = num_actions
 
-    #def sample(self):
-    #    return np.random.randint(self.n, size=self.num_TL)
+    def sample(self):
+        return np.random.randint(self.n, size=self.num_TL)
 
 class ObservationSpaces(spaces.Box):
     def __init__(self, num_TL, num_attrs):

@@ -25,7 +25,7 @@ from gym.utils import seeding
 #import numpy as np
 
 TRUNCATE_DISTANCE = 125.
-MAX_LANE_REWARD = 20
+MAX_LANE_REWARD = 20.
 
 def remove_duplicates(seq):
     seen = set()
@@ -194,7 +194,7 @@ class TrafficLight():
             libsumo.trafficlight_setRedYellowGreenState(self.id, self.signal_groups[phase])
             return
         else:
-            traci.trafficlights.setRedYellowGreenState(self.id,self.signal_groups[phase])
+            traci.trafficlight.setRedYellowGreenState(self.id,self.signal_groups[phase])
             return
 
     def step(self):
@@ -257,7 +257,7 @@ class SimpleTrafficLight(TrafficLight):
             self.traffic_state = self.observation_processor(self.traffic_state)
     def wrap_reward(self):
         if self.reward_present_form == 'reward':
-            self.reward = -self.reward
+            self.reward = 0 - self.reward
             max_reward = self.n_lanes * MAX_LANE_REWARD
             self.reward += max_reward
             if self.simulator.normalize_reward:
@@ -581,7 +581,6 @@ class TrafficEnv(gym.Env):
         super().__init__()
         temp = locals().copy()
         self.current_parameter_set = {k: temp[k] for k in self.get_default_init_parameters().keys()} ## save all the parameter passed into a dictionary
-
         #self.current_parameter_set = locals()
         self.reward_range = (-float('inf'), float('inf'))
         self.visual = visual
@@ -718,12 +717,12 @@ class TrafficEnv(gym.Env):
         if tl_list:
             self.tl_id_list = tl_list
         else:
-            tl_list = traci.trafficlights.getIDList()
+            tl_list = traci.trafficlight.getIDList()
             #print 'tls:',tl_list
             self.tl_id_list = tl_list
         lane_list = []
         for tlid in self.tl_id_list:
-            tl_lane_list = remove_duplicates(traci.trafficlights.getControlledLanes(tlid))
+            tl_lane_list = remove_duplicates(traci.trafficlight.getControlledLanes(tlid))
             self.tl_list[tlid] = self.traffic_light_module(tlid, self, num_traffic_state = self.num_traffic_state, lane_list = tl_lane_list,state_representation = self.state_representation, reward_present_form = self.reward_present_form, observation_processor = self.observation_processor)
             lane_list = lane_list + tl_lane_list
             #print 'controlled lane', self.tl_list[tlid].lane_list
@@ -898,7 +897,7 @@ class TrafficEnv(gym.Env):
             tl.updateRLParameters()
             observation.append(tl.traffic_state)
             reward.append(self.tl_list[tlid].reward)
-
+        self.action_buffer = {}
         if self.reset_manager:
             self.reset_manager.on_reset()
 
